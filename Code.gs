@@ -26,7 +26,9 @@ var EXPENSE_TYPES = [
   'Weekend',
   'iTunes'
 ];
-
+; Sign to use for amount values
+; Some expense apps use minus (-) for expenses, others use positive values
+var SIGN_MULTIPLIER = 1;
 var EXPENSE_SUBTYPES = [];
 EXPENSE_SUBTYPES['Utilities'] = [
   'Gas',
@@ -135,7 +137,7 @@ function setupSumChart() {
  * Sets the formula for the monthly totals (by category)
  */
 function setCategoryMonthlyTotals(row, column, conceptName, rangeOfEntries) {
-  sheet.getRange(row, column).setFormula("=SUMIF(" + rangeOfEntries + "," + conceptName + "," + AMOUNT_RANGE.getA1Notation() + ") * -1");
+  sheet.getRange(row, column).setFormula("=SUMIF(" + rangeOfEntries + "," + conceptName + "," + AMOUNT_RANGE.getA1Notation() + ") * SIGN_MULTIPLIER");
 }
 
 function setMonthTotals(row, column, monthTotal) {
