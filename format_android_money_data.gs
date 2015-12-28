@@ -40,9 +40,15 @@ function onOpen() {
   formattedSheet = spreadsheet.getSheetByName('Formatted');
   sheet = spreadsheet.getActiveSheet();
   var menuEntries = [
-    {name: "Format & Transfer Data", functionName: "transformData"}
+    {name: "Format & Transfer Data", functionName: "formatAndTransferData"}
   ];
-  spreadsheet.addMenu("Android Menu", menuEntries);
+  spreadsheet.addMenu("AndroidMoney", menuEntries);
+}
+
+function formatAndTransferData() {
+  transformAmount();
+  copyFormattedData();
+  copyDataToTracker();
 }
 
 /*
@@ -52,12 +58,14 @@ function onOpen() {
 function transformAmount() {
   var columnExpenseType = 'G';
   var columnAmount = 'C';
-  sheet = spreadsheet.getActiveSheet();
+    spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  sheet = spreadsheet.getSheetByName('AndroMoney');
 
   var id;
   var cellValue;
+    var lastRow = sheet.getLastRow();
 
-  for (var i = 2; i < MAX_ROW_NUMBER; i++) {
+  for (var i = 3; i <= lastRow; i++) {
     id = columnExpenseType + i;
         cell = sheet.getRange(id);
     cellValue = cell.getValue();
@@ -65,10 +73,10 @@ function transformAmount() {
       
     if (cellValue != '') {
             cell = sheet.getRange(id);
-            cell.setValue(0 - cell.getValue());
+            cell.setValue(0 - Math.abs(cell.getValue()));
     } else {
       cell = sheet.getRange(id);
-            cell.setValue(0 + cell.getValue());
+            cell.setValue(0 + Math.abs(cell.getValue()));
     }
   }
 }
@@ -76,10 +84,9 @@ function transformAmount() {
 /*
  * Copy the raw data to formatted spreadsheet
  */
-function transformData() {
-  transformAmount();
+function copyFormattedData() {
   spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  sheet = spreadsheet.getActiveSheet();
+  sheet = spreadsheet.getSheetByName('AndroMoney');
 
   for (var columnSource in HEADING_COLUMN) {
     var values = sheet.getRange(3, columnSource, MAX_ROW_NUMBER); //getRange(row, column, numRows)
