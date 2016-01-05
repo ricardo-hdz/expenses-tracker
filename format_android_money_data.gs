@@ -31,14 +31,20 @@ var TRACKER_ID = '1dzNLLJ_gVZMcsS-Q5FtxHv9ka9SAKbsHXtJc6zAIHeA';
 
 var MAX_ROW_NUMBER = 200;
 
-var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-var formattedSheet = spreadsheet.getSheetByName('Formatted');
-var sheet = spreadsheet.getActiveSheet();
+var spreadsheet;
+var formattedSheet;
+var sheet;
 
 function onOpen() {
   spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   formattedSheet = spreadsheet.getSheetByName('Formatted');
-  sheet = spreadsheet.getActiveSheet();
+  if (formattedSheet == null) {
+    spreadsheet.insertSheet('Formatted');
+    formattedSheet = spreadsheet.getSheetByName('Formatted');
+  }
+  sheet = spreadsheet.getSheetByName('AndroMoney');
+  spreadsheet.setActiveSheet(sheet);
+
   var menuEntries = [
     {name: "Format & Transfer Data", functionName: "formatAndTransferData"}
   ];
@@ -70,7 +76,7 @@ function transformAmount() {
         cell = sheet.getRange(id);
     cellValue = cell.getValue();
     id = columnAmount + i;
-      
+
     if (cellValue != '') {
             cell = sheet.getRange(id);
             cell.setValue(0 - Math.abs(cell.getValue()));
@@ -86,13 +92,14 @@ function transformAmount() {
  */
 function copyFormattedData() {
   spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  formattedSheet = spreadsheet.getSheetByName('Formatted');
   sheet = spreadsheet.getSheetByName('AndroMoney');
 
   for (var columnSource in HEADING_COLUMN) {
     var values = sheet.getRange(3, columnSource, MAX_ROW_NUMBER); //getRange(row, column, numRows)
     var targetColumn = HEADING_COLUMN[columnSource];
     values.copyValuesToRange(formattedSheet, targetColumn, targetColumn, 2, MAX_ROW_NUMBER);
-  } 
+  }
 }
 
 /*
@@ -103,9 +110,9 @@ function copyDataToTracker() {
   spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   formattedSheet = spreadsheet.getSheetByName('Formatted');
   var sourceData = formattedSheet.getDataRange().getValues()
-  
+
   var targetSheetName = getCurrentMonth();
-  
+
   // Copy data to tracker
   var trackerSpreadsheet = SpreadsheetApp.openById(TRACKER_ID).getSheetByName(targetSheetName);
   var targetRangeTop = trackerSpreadsheet.getLastRow();
@@ -122,10 +129,10 @@ function getCurrentMonth() {
 
   var cell = sheet.getRange('A2');
   var dateString = cell.getValue() + '';
-  
+
   var year        = dateString.substring(0,4);
   var month       = dateString.substring(4,6);
   var day         = dateString.substring(6,8);
-  
+
   return MONTHS[month];
 }
