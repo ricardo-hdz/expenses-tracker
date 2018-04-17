@@ -88,6 +88,18 @@ function onOpen() {
   spreadsheet.addMenu("ExpenseTracker", menuEntries);
 }
 
+
+/**
+* Executes process month when an edition is made to more than 5 rows
+*/
+function onEdit(e) {
+  var user = e.user;    
+  var sessionUser = Session.getActiveUser().getEmail();
+  if (!user) {
+      formatAndTransferData();
+  }
+}
+
 /**
  * Sets the sum chart (titles and formulas)
  *
@@ -99,17 +111,17 @@ function setupSumChart() {
       column,
       subtypeColumn,
       monthTotal = 0;
-
+  
   catRange = sheet.getRange(SUM_CHART_RANGE);
   row = catRange.getRow();
   column = catRange.getColumn();
-
+  
   for (var i = 0, category; (category = EXPENSE_TYPES[i]); i++) {
     catRange = sheet.getRange(row, column);
     catRange.setValue(category);
     // catRange.getA1Notations() returns the name of the category
     setCategoryMonthlyTotals(row, column + 2, catRange.getA1Notation(), CATEGORY_RANGE.getA1Notation());
-
+    
     // Sume the value of the category to the total
     monthTotal = monthTotal + sheet.getRange(row, column + 2).getValue();
 
@@ -154,10 +166,10 @@ function copyMonthTotalsToMaster() {
       values,
       spreadsheet,
       sheet;
-
+  
   spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   sheet = spreadsheet.getActiveSheet();
-
+  
   month = ScriptProperties.getProperty('month');
   column = MONTH_COLUMN_MAP[month];
   values = MONTHLY_SUM.getValues();
@@ -176,10 +188,10 @@ function copyMonthTotalsToMaster() {
 **/
 function processMonth() {
   var currentMonth;
-
+  
   currentMonth = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getName();
   ScriptProperties.setProperty('month', currentMonth);
-
+  
   setupSumChart();
   copyMonthTotalsToMaster();
   verifyMonthBudget();
@@ -194,13 +206,13 @@ function verifyMonthBudget() {
       row,
       spreadsheet,
       sheet;
-
+  
   month = ScriptProperties.getProperty('month');
   spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   sheet = spreadsheet.getActiveSheet();
-
+  
   monthColumn = MONTH_COLUMN_MAP[month];
-
+  
   for (row = 2; row < 26; row++) {
     expenseCell = sheet.getRange(row, monthColumn);
     expenseAmount = expenseCell.getValue();
